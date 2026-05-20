@@ -1,6 +1,8 @@
 # BatchSRT
-
-BatchSRT 是一个基于 Tauri 2、React、TypeScript 和 Rust 的桌面端批量音频转字幕工具。它支持在线网站转写、在线模型 API 转写和本地 whisper.cpp 模型转写，并提供任务列表、音频播放、TXT/SRT 结果预览、批量下载、重试和历史记录等功能。
+![BatchSRT 在线网站](001.png)
+![BatchSRT 本地模型](002.png)
+![BatchSRT 在线模型](003.png)
+BatchBatchSRT 是一个基于 Tauri 2、React、TypeScript 和 Rust 的桌面端批量音频转字幕工具。它支持在线网站转写、在线模型 API 转写和本地 whisper.cpp 模型转写，并提供任务列表、音频播放、TXT/SRT 结果预览、批量下载、重试和历史记录等功能。
 
 ## 功能特性
 
