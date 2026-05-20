@@ -1,0 +1,32 @@
+# Tasks
+- [x] Task 1: 项目初始化
+  - [x] SubTask 1.1: 使用 Tauri 2 CLI 创建项目骨架
+  - [x] SubTask 1.2: 配置 React 19、Vite、TypeScript 环境
+  - [x] SubTask 1.3: 安装并配置 Tailwind CSS
+- [x] Task 2: 后端基础架构搭建
+  - [x] SubTask 2.1: 在 Rust 中引入 Tokio、Reqwest、Axum 依赖
+  - [x] SubTask 2.2: 设置 Axum 路由及与 Tauri 的 IPC 通信机制
+- [x] Task 3: 模拟请求模块实现 (在线网站转换)
+  - [x] SubTask 3.1: 封装 Reqwest 客户端，支持并发及请求伪装
+  - [x] SubTask 3.2: 实现批量音频上传及结果轮询逻辑
+- [x] Task 4: 本地模型模块实现
+  - [x] SubTask 4.1: 实现依赖下载管理器（下载 ffmpeg、whisper 模型）
+  - [x] SubTask 4.2: 封装 Rust 子进程调用（`std::process::Command`），实现本地音频转码与推理
+- [x] Task 5: 在线模型 API 模块实现
+  - [x] SubTask 5.1: 集成第三方大模型音频转文本 API 接口调用
+- [x] Task 6: 前端界面开发
+  - [x] SubTask 6.1: 构建主布局及侧边栏（模式切换：在线模拟 / 本地模型 / API 模型）
+  - [x] SubTask 6.2: 实现文件拖拽上传组件及任务进度列表
+  - [x] SubTask 6.3: 与 Tauri 后端进行接口联调
+- [x] Task 7: 修复前后端联调及真实逻辑集成
+  - [x] SubTask 7.1: 前端根据当前选择模式（Mock/Local/API）调用真实的后端 Command (`upload_audio_mock`, `run_local_model`, `whisper_api_transcribe`)
+  - [x] SubTask 7.2: 增加前端 API Key 设置输入框及本地模型下载触发逻辑
+  - [x] SubTask 7.3: 对接后端返回的真实进度与状态，替代硬编码进度
+
+# Task Dependencies
+- [Task 2] depends on [Task 1]
+- [Task 3] depends on [Task 2]
+- [Task 4] depends on [Task 2]
+- [Task 5] depends on [Task 2]
+- [Task 6] depends on [Task 1]
+- [Task 7] depends on [Task 3, Task 4, Task 5, Task 6]
