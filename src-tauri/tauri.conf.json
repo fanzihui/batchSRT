@@ -13,8 +13,13 @@
     "windows": [
       {
         "title": "BatchSRT",
-        "width": 800,
-        "height": 600
+        "width": 1100,
+        "height": 720,
+        "minWidth": 800,
+        "minHeight": 600,
+        "fullscreen": false,
+        "maximized": false,
+        "resizable": true
       }
     ],
     "security": {
