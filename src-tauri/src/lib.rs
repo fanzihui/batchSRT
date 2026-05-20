@@ -31,6 +31,7 @@ pub fn run() {
             transcribe_audio,
             online_mock::upload_audio_online,
             online_mock::poll_task_mock,
+            online_mock::check_site_health,
             local_model::download_dependency,
             local_model::validate_local_executable,
             local_model::read_audio_source,

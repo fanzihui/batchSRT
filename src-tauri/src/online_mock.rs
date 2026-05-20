@@ -28,6 +28,10 @@ pub struct OnlineSiteConfig {
     pub token_field: Option<String>,
     pub token: Option<String>,
     #[serde(default)]
+    pub fetch_token_url: Option<String>,
+    #[serde(default)]
+    pub fetch_token_regex: Option<String>,
+    #[serde(default)]
     pub extra_fields: Vec<KeyValueField>,
 }
 
@@ -62,7 +66,33 @@ pub async fn upload_audio_online(
 
     let mut form = multipart::Form::new().part(site.file_field.trim().to_string(), part);
 
-    if let (Some(token_field), Some(token)) = (&site.token_field, &site.token) {
+    let client = reqwest::Client::new();
+
+    // 尝试动态获取 token
+    let mut actual_token = site.token.clone();
+    if let (Some(fetch_url), Some(regex_str)) = (&site.fetch_token_url, &site.fetch_token_regex) {
+        if !fetch_url.trim().is_empty() && !regex_str.trim().is_empty() {
+            if let Ok(html) = client
+                .get(fetch_url.trim())
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .send()
+                .await
+                .and_then(|r| r.error_for_status())
+            {
+                if let Ok(text) = html.text().await {
+                    if let Ok(re) = regex::Regex::new(regex_str) {
+                        if let Some(caps) = re.captures(&text) {
+                            if let Some(m) = caps.get(1) {
+                                actual_token = Some(m.as_str().to_string());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if let (Some(token_field), Some(token)) = (&site.token_field, &actual_token) {
         if !token_field.trim().is_empty() && !token.trim().is_empty() {
             form = form.text(token_field.trim().to_string(), token.clone());
         }
@@ -76,9 +106,11 @@ pub async fn upload_audio_online(
         form = form.text(field.key.trim().to_string(), field.value.clone());
     }
 
-    let client = reqwest::Client::new();
     let response = client
         .post(site.endpoint_url.trim())
+        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        .header("Origin", "https://www.text-to-speech.cn")
+        .header("Referer", "https://www.text-to-speech.cn/stt.html")
         .multipart(form)
         .send()
         .await
@@ -177,4 +209,40 @@ fn srt_to_paragraph_txt(srt: &str) -> String {
 #[tauri::command]
 pub async fn poll_task_mock(_task_id: String) -> Result<String, String> {
     Ok("".to_string())
+}
+
+#[tauri::command]
+pub async fn check_site_health(site: OnlineSiteConfig) -> Result<bool, String> {
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .build()
+        .map_err(|e| e.to_string())?;
+        
+    let url = if let Some(fetch_url) = &site.fetch_token_url {
+        if !fetch_url.trim().is_empty() {
+            fetch_url.trim()
+        } else {
+            site.endpoint_url.trim()
+        }
+    } else {
+        site.endpoint_url.trim()
+    };
+
+    if url.is_empty() {
+        return Err("网站 URL 为空".to_string());
+    }
+
+    let response = client
+        .get(url)
+        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        .send()
+        .await
+        .map_err(|e| format!("无法连接到该网站: {e}"))?;
+
+    // 只要服务器有响应（不管是 200 OK 还是 405 Method Not Allowed 等），说明服务器存活
+    if response.status().is_success() || response.status().is_client_error() {
+        Ok(true)
+    } else {
+        Err(format!("网站服务异常，状态码: {}", response.status()))
+    }
 }
