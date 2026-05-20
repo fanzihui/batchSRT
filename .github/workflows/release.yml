@@ -47,17 +47,29 @@ jobs:
       - name: install frontend dependencies
         run: npm install
 
-      # 通过官方 tauri-action 编译并生成 latest.json
+      - name: validate updater signing secrets
+        shell: pwsh
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY || secrets.TAURI_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD || secrets.TAURI_KEY_PASSWORD }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:TAURI_SIGNING_PRIVATE_KEY)) {
+            throw "缺少更新签名私钥。请在 GitHub Secrets 中配置 `TAURI_SIGNING_PRIVATE_KEY`，或兼容旧名称 `TAURI_PRIVATE_KEY`。"
+          }
+          Write-Host "Updater signing key detected."
+
+      # 通过官方 tauri-action 编译并上传 updater 元数据
       - name: build and release tauri app
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY || secrets.TAURI_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD || secrets.TAURI_KEY_PASSWORD }}
         with:
           tagName: v__VERSION__ # 修复为标准的 v0.1.0 格式，以确保 latest.json 路由匹配
           releaseName: 'BatchSRT v__VERSION__'
           releaseBody: '欢迎使用新版本！请查看更新日志。'
           releaseDraft: false
           prerelease: false
+          uploadUpdaterJson: true
           args: ${{ matrix.args }}
