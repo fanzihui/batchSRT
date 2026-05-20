@@ -11,6 +11,7 @@ interface SidebarProps {
   openTaskModal: (task: Task, initialTab: ResultFormat) => void;
   isCheckingUpdate: boolean;
   handleCheckUpdate: () => void;
+  appVersion: string;
 }
 
 export function Sidebar({
@@ -20,6 +21,7 @@ export function Sidebar({
   openTaskModal,
   isCheckingUpdate,
   handleCheckUpdate,
+  appVersion,
 }: SidebarProps) {
   const activeMode = MODE_CONFIG[mode];
   const ActiveModeIcon = activeMode.icon;
@@ -119,7 +121,7 @@ export function Sidebar({
           {isCheckingUpdate ? <LoaderCircle size={16} className="animate-spin" /> : <RefreshCw size={16} />}
           {isCheckingUpdate ? "检查中..." : "检查更新"}
         </button>
-        <p className="mt-2 text-center text-[10px] text-slate-400">v0.1.0</p>
+        <p className="mt-2 text-center text-[10px] text-slate-400">v{appVersion}</p>
       </div>
     </aside>
   );

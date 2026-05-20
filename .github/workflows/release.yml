@@ -47,6 +47,11 @@ jobs:
       - name: install frontend dependencies
         run: npm install
 
+      - name: verify tauri signature config
+        run: |
+          echo "Checking TAURI_SIGNING_PRIVATE_KEY exists..."
+          if [ -z "${{ secrets.TAURI_PRIVATE_KEY }}" ]; then echo "MISSING!"; else echo "OK"; fi
+
       # 通过官方 tauri-action 编译并生成 latest.json
       - name: build and release tauri app
         uses: tauri-apps/tauri-action@v0
